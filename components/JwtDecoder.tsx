@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
-const jwt_decode = require('jwt-decode');
+import jwt from 'jsonwebtoken';
 
 const JwtDecoder: React.FC = () => {
   const [token, setToken] = useState<string>('');
-  const [decoded, setDecoded] = useState<string | null>(null);
+  const [header, setHeader] = useState<string | null>(null);
+  const [payload, setPayload] = useState<string | null>(null);
+  const [signature, setSignature] = useState<string | null>(null);
 
   const handleDecode = () => {
     try {
-      const decodedToken = jwt_decode(token); // Ensure this is correctly recognized as a function
-      setDecoded(JSON.stringify(decodedToken, null, 2));
+      const decodedToken: any = jwt.decode(token, { complete: true });
+
+      // Extract and set header, payload, and signature
+      if (decodedToken) {
+        setHeader(JSON.stringify(decodedToken.header, null, 2));
+        setPayload(JSON.stringify(decodedToken.payload, null, 2));
+        setSignature(decodedToken.signature);
+      }
     } catch (error) {
-      setDecoded(`Error decoding token: ${(error as Error).message}`);
+      console.error(error);
     }
   };
 
@@ -26,10 +34,29 @@ const JwtDecoder: React.FC = () => {
       ></textarea>
       <br />
       <button onClick={handleDecode}>Decode</button>
-      {decoded && (
-        <pre style={{ textAlign: 'left', marginTop: '20px', maxWidth: '600px', margin: '0 auto' }}>
-          {decoded}
-        </pre>
+
+      {/* Display header */}
+      {header && (
+        <div>
+          <h2>Header:</h2>
+          <pre style={{ textAlign: 'left' }}>{header}</pre>
+        </div>
+      )}
+
+      {/* Display payload */}
+      {payload && (
+        <div>
+          <h2>Payload:</h2>
+          <pre style={{ textAlign: 'left' }}>{payload}</pre>
+        </div>
+      )}
+
+      {/* Display signature */}
+      {signature && (
+        <div>
+          <h2>Signature:</h2>
+          <pre style={{ textAlign: 'left' }}>{signature}</pre>
+        </div>
       )}
     </div>
   );
